@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Circus Charlie Runner</title>
+<title>Circus Runner</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body {
@@ -178,7 +178,7 @@
 </div>
 <script>
 // ═══════════════════════════════════════════════
-//  CIRCUS CHARLIE RUNNER
+//  CIRCUS RUNNER
 //  Auto-run + Jump + Double-Jump
 //  Obstacles: Animals, Swinging Traps, Platforms
 // ═══════════════════════════════════════════════
@@ -1112,9 +1112,8 @@ function drawMenu() {
     px(i, GH-40, 12, 12, blink ? C.red : C.pink);
   }
 
-  txt('CIRCUS', GW/2, 68, 46, C.yellow);
-  txt('CHARLIE', GW/2, 118, 44, C.red);
-  txt('RUNNER', GW/2, 162, 32, C.white);
+  txt('CIRCUS', GW/2, 78, 46, C.yellow);
+  txt('RUNNER', GW/2, 136, 44, C.red);
 
   // Decorative stars
   for (let i=0;i<8;i++) {
@@ -1254,9 +1253,9 @@ function buildScoreCard() {
   cx.textAlign = 'center';
   cx.textBaseline = 'top';
   cx.fillStyle = '#000';
-  cx.fillText('🎪 CIRCUS CHARLIE', CW/2+2, 38);
+  cx.fillText('🎪 CIRCUS RUNNER', CW/2+2, 38);
   cx.fillStyle = '#f5d800';
-  cx.fillText('🎪 CIRCUS CHARLIE', CW/2, 36);
+  cx.fillText('🎪 CIRCUS RUNNER', CW/2, 36);
 
   // Divider
   cx.strokeStyle = '#f5d80088';
@@ -1320,14 +1319,14 @@ function buildScoreCard() {
 async function shareScore() {
   const card = buildScoreCard();
   const blob = await new Promise(res => card.toBlob(res, 'image/png'));
-  const file = new File([blob], 'circus-charlie-score.png', { type: 'image/png' });
+  const file = new File([blob], 'circus-runner-score.png', { type: 'image/png' });
 
   // Try Web Share API (mobile)
   if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
-        title: 'Circus Charlie Runner',
-        text: `🎪 I scored ${score} in Circus Charlie Runner! Can you beat me?`,
+        title: 'Circus Runner',
+        text: `🎪 I scored ${score} in Circus Runner! Can you beat me?`,
         files: [file],
       });
       showToast('✓ Shared!');
@@ -1342,8 +1341,8 @@ async function shareScore() {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: 'Circus Charlie Runner',
-        text: `🎪 I scored ${score} in Circus Charlie Runner! Can you beat me?`,
+        title: 'Circus Runner',
+        text: `🎪 I scored ${score} in Circus Runner! Can you beat me?`,
       });
       showToast('✓ Shared!');
       return;
@@ -1354,7 +1353,7 @@ async function shareScore() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `circus-charlie-score-${score}.png`;
+  a.download = `circus-runner-score-${score}.png`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('✓ Score card saved!');
