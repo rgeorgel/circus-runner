@@ -9,10 +9,24 @@
   html, body {
     width:100%; height:100%;
     background:#111;
-    display:flex; align-items:center; justify-content:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
     overflow:hidden;
     font-family: 'Courier New', monospace;
     touch-action: none;
+  }
+  #ad-banner {
+    width: 100%;
+    max-width: 728px;
+    min-height: 50px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-top: 2px solid #333;
+    color: #555;
+    font-size: 11px;
+    letter-spacing: 1px;
   }
   #wrap {
     position:relative;
@@ -53,6 +67,33 @@
   }
   .gbtn:active { background:#fff2; }
   .gbtn .icon { font-size:22px; line-height:1; }
+
+  #continueBtn {
+    position:absolute;
+    bottom: 175px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: all;
+    background: linear-gradient(135deg, #18c840, #008822);
+    border: 3px solid #fff;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 12px 22px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px #00000066;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    animation: sharePop 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+  }
+  #continueBtn:active { transform: translateX(-50%) scale(0.95); }
+  #continueBtn .cicon { font-size: 18px; }
 
   #shareBtn {
     position:absolute;
@@ -110,8 +151,30 @@
   <div id="btns">
     <button class="gbtn" id="btnJump" style="margin:0 auto;"><span class="icon">⬆</span>JUMP</button>
   </div>
+  <button id="continueBtn"><span class="cicon">▶</span> WATCH AD - CONTINUE</button>
   <button id="shareBtn"><span class="sicon">📤</span> SHARE SCORE</button>
   <div id="shareToast">✓ Score card copied!</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     BANNER AD SLOT
+     Replace the placeholder below with your
+     Google AdSense <ins> tag or another ad network.
+     Get your publisher ID at: https://adsense.google.com
+     ═══════════════════════════════════════════════ -->
+<div id="ad-banner">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6601883419056823"
+     crossorigin="anonymous"></script>
+<!-- 320×50 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6601883419056823"
+     data-ad-slot="4409134086"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
 </div>
 <script>
 // ═══════════════════════════════════════════════
@@ -128,7 +191,10 @@ const GW = 420, GH = 680;
 let scale = 1;
 
 function resize() {
-  const sw = window.innerWidth, sh = window.innerHeight;
+  const sw = window.innerWidth;
+  const adEl = document.getElementById('ad-banner');
+  const adH = adEl ? adEl.offsetHeight : 0;
+  const sh = window.innerHeight - adH;
   scale = Math.min(sw / GW, sh / GH);
   canvas.width = GW; canvas.height = GH;
   canvas.style.width  = (GW * scale) + 'px';
@@ -184,6 +250,7 @@ const ST = { MENU:0, PLAY:1, DEAD:2 };
 let state = ST.MENU;
 let frame = 0, score = 0, best = 0, combo = 0, comboTimer = 0;
 let bgScroll = 0;
+let continues = 0; // rewarded-ad continues used this run (max 1)
 
 // ─── GROUND / TERRAIN ─────────────────────────
 const GROUND_Y = GH - 110;
@@ -333,8 +400,54 @@ function resetGame() {
   obstacles = []; ropes = []; platforms = []; particles = [];
   coins = []; scorePopups = [];
   section = 0; spawnTimer = 0; spawnInterval = 110;
+  continues = 0;
   initBg();
   resetPlayer();
+}
+
+// ─── REWARDED AD + CONTINUE ────────────────────
+// Replace showRewardedAd() with your ad network's rewarded ad call.
+// Supported networks: Google IMA, IronSource, AdMob (WebView), Poki SDK,
+// CrazyGames SDK, AppLovin MAX, etc.
+// Call onRewarded(true) when the user earns the reward (ad completed).
+// Call onRewarded(false) if the ad was skipped or failed.
+function showRewardedAd(onRewarded) {
+  // ── INTEGRATION POINT ──────────────────────────
+  // Example for CrazyGames SDK:
+  //   CrazyGames.SDK.ad.requestAd('rewarded', {
+  //     adFinished: () => onRewarded(true),
+  //     adError: ()    => onRewarded(false),
+  //   });
+  //
+  // Example for Poki SDK:
+  //   PokiSDK.rewardedBreak().then(withReward => onRewarded(withReward));
+  //
+  // ── PLACEHOLDER (5-second fake ad) ────────────
+  // Remove this block once you integrate a real network:
+  const btn = document.getElementById('continueBtn');
+  btn.textContent = '▶ Ad playing... 5';
+  btn.style.pointerEvents = 'none';
+  let t = 4;
+  const iv = setInterval(() => {
+    btn.textContent = `▶ Ad playing... ${t--}`;
+    if (t < 0) {
+      clearInterval(iv);
+      onRewarded(true);
+    }
+  }, 1000);
+}
+
+function revivePlayer() {
+  P.dead = false;
+  state = ST.PLAY;
+  P.vy = 0;
+  P.y = GROUND_Y - P.h;
+  P.onGround = true;
+  P.doubleJumped = false;
+  P.jumpCount = 0;
+  P.invincible = 180; // 3 seconds of invincibility
+  addBurst(P.x + P.w/2, P.y + P.h/2, C.green, 16);
+  addBurst(P.x + P.w/2, P.y + P.h/2, C.star, 10);
 }
 
 // ─── PARTICLES ─────────────────────────────────
@@ -1232,17 +1345,46 @@ function showToast(msg) {
 shareBtn.addEventListener('click', e => { e.stopPropagation(); shareScore(); });
 shareBtn.addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); shareScore(); }, { passive:false });
 
+const continueBtn = document.getElementById('continueBtn');
+
+continueBtn.addEventListener('click', e => { e.stopPropagation(); triggerContinue(); });
+continueBtn.addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); triggerContinue(); }, { passive:false });
+
+function triggerContinue() {
+  if (state !== ST.DEAD || continues >= 1) return;
+  continueBtn.style.pointerEvents = 'none';
+  showRewardedAd(rewarded => {
+    if (rewarded) {
+      continues++;
+      continueBtn.style.display = 'none';
+      revivePlayer();
+    } else {
+      // Ad failed or skipped — reset button
+      continueBtn.textContent = '▶ WATCH AD - CONTINUE';
+      continueBtn.style.pointerEvents = 'all';
+    }
+  });
+}
+
 // Show/hide buttons based on state
 function updateBtns() {
   const btns = document.getElementById('btns');
   btns.style.display = (state === ST.PLAY) ? 'flex' : 'none';
-  // Show share button only on game over, after a short delay
+
   if (state === ST.DEAD) {
     setTimeout(() => {
-      if (state === ST.DEAD) shareBtn.style.display = 'flex';
+      if (state !== ST.DEAD) return;
+      shareBtn.style.display = 'flex';
+      // Only offer continue if the player hasn't used it yet this run
+      if (continues < 1) {
+        continueBtn.innerHTML = '<span class="cicon">▶</span> WATCH AD - CONTINUE';
+        continueBtn.style.pointerEvents = 'all';
+        continueBtn.style.display = 'flex';
+      }
     }, 800);
   } else {
     shareBtn.style.display = 'none';
+    continueBtn.style.display = 'none';
   }
 }
 
