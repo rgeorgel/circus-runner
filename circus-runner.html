@@ -501,7 +501,8 @@ function update() {
     }
 
     // Ground landing
-    if (P.y >= GROUND_Y - P.h) {
+    const overGap = obstacles.some(o => o.type === 'GAP' && P.x + P.w > o.x && P.x < o.x + o.w);
+    if (!overGap && P.y >= GROUND_Y - P.h) {
       P.y = GROUND_Y - P.h;
       P.vy = 0;
       if (!P.onGround) {
@@ -541,7 +542,7 @@ function update() {
             die(); return;
           }
         } else if (o.type === 'GAP') {
-          if (P.y > GROUND_Y && P.x + P.w > o.x && P.x < o.x + o.w) {
+          if (P.y + P.h > GROUND_Y && P.x + P.w > o.x && P.x < o.x + o.w) {
             die(); return;
           }
         }
