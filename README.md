@@ -4,13 +4,31 @@ A browser-based endless runner game inspired by Circus Charlie. Single HTML file
 
 ## How to Run
 
-Just open `circus-runner.html` in any modern browser — no server required.
+### Docker (recommended)
+
+Requires [Docker](https://docs.docker.com/get-docker/) and Docker Compose.
+
+```bash
+docker compose up
+```
+
+Then open [http://localhost:8092](http://localhost:8092).
+
+To stop:
+
+```bash
+docker compose down
+```
+
+### Without Docker
+
+Just open `circus-runner.html` directly in any modern browser — no server required.
 
 ```
 double-click circus-runner.html
 ```
 
-To test on mobile or share on a local network, serve it with any static server:
+Or serve it with a local static server:
 
 ```bash
 # Python

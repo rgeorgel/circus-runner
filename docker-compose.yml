@@ -1,0 +1,8 @@
+services:
+  circus-runner:
+    image: nginx:alpine
+    ports:
+      - "8092:80"
+    volumes:
+      - ./circus-runner.html:/usr/share/nginx/html/index.html:ro
+    restart: unless-stopped
